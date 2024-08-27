@@ -1,7 +1,12 @@
-using WardrobeApp.Client.Pages;
+﻿using WardrobeApp.Client.Pages;
 using WardrobeApp.Components;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using WardrobeApp.Data;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddDbContext<WardrobeContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("WardrobeContext") ?? throw new InvalidOperationException("Connection string 'WardrobeContext' not found.")));
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
