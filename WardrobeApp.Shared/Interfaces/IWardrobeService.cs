@@ -11,6 +11,6 @@ namespace WardrobeApp.Shared.Interfaces
     public interface IWardrobeService
     {
         public Task<List<ClothingModel>> GetWardrobeAsync();
-        public Task AddClothingAsync(ClothingModel clothing);
+        public Task<ClothingModel> AddClothingAsync(ClothingModel clothing);
     }
 }

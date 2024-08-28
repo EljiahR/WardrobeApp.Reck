@@ -4,8 +4,8 @@ using WardrobeApp.Shared.Models;
 
 namespace WardrobeApp.Repositories
 {
-    public class WardrobeRepository
-    {
+    public class WardrobeRepository : IWardrobeRepository
+	{
 
         private readonly WardrobeContext _context;
         private readonly DbSet<ClothingModel> _wardrobe;
@@ -21,10 +21,11 @@ namespace WardrobeApp.Repositories
             return await _wardrobe.ToListAsync();
         }
 
-        public async Task AddClothingAsync(ClothingModel clothing)
+        public async Task<ClothingModel> AddClothingAsync(ClothingModel clothing)
         {
             await _wardrobe.AddAsync(clothing);
             await SaveChangesAsync();
+            return clothing;
         }
 
         private async Task SaveChangesAsync()

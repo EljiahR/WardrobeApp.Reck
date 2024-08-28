@@ -1,7 +1,75 @@
 ﻿@page "/wardrobe"
-@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@rendermode InteractiveWebAssembly
+@inject NavigationManager Navigation
 @inject HttpClient Http
 
-@code {
+<h3>Wardrobe</h3>
+<input @bind="@newCategory" />
+<button @onclick="@AddClothing">Add Clothing</button>
 
+
+@if(isLoading)
+{
+	<p>Wardrobe is loading...</p>
+} 
+else if (wardrobe.Count > 0)
+{
+	<ul>
+		@foreach (var item in wardrobe)
+		{
+			<li>@item.Category</li>
+		}
+	</ul>
+} else
+{
+	<p>Wardrobe is empty :(</p>
+}
+
+@code {
+	private List<ClothingModel> wardrobe = new();
+	private string? newCategory;
+	private bool isLoading = true;
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+
+		if (firstRender && Navigation.Uri.Contains("http"))
+		{
+			await LoadWardrobe();
+		}
+	}
+
+
+	private async Task LoadWardrobe()
+	{
+		try
+		{
+			isLoading = true;
+			//wardrobe = await WardrobeService.GetWardrobeAsync();
+			wardrobe = await Http.GetFromJsonAsync<List<ClothingModel>>("api/Wardrobe") ?? new List<ClothingModel>();
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine(ex.Message);
+		}
+		finally
+		{
+			isLoading = false;
+			StateHasChanged(); // Why is this necessary
+		}
+	}
+
+	private async Task AddClothing()
+	{
+		try
+		{
+			//var postedClothing = await WardrobeService.AddClothingAsync(new ClothingModel { Category = newCategory });
+			//wardrobe.Add(postedClothing);
+			newCategory = string.Empty;
+		} catch (Exception ex)
+		{
+			Console.WriteLine(ex.Message);
+		}
+
+	}
 }

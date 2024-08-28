@@ -24,7 +24,7 @@ namespace WardrobeApp.Controllers
 
         // GET: api/Wardrobe
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ClothingModel>>> GetClothingModel()
+        public async Task<ActionResult<List<ClothingModel>>> GetClothingModel()
         {
             return await _wardrobeService.GetWardrobeAsync();
         }

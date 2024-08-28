@@ -3,6 +3,12 @@ using WardrobeApp.Components;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using WardrobeApp.Data;
+using WardrobeApp.Shared.Interfaces;
+using WardrobeApp.Services;
+using WardrobeApp.Repositories;
+using Microsoft.Net.Http.Headers;
+
+var MyAllowSpecificOrigins = "_MyAllowSpecificOrigins";
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<WardrobeContext>(options =>
@@ -13,7 +19,28 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 
+builder.Services.AddScoped<IWardrobeRepository,  WardrobeRepository>();
+builder.Services.AddScoped<IWardrobeService, WardrobeService>();
+
+builder.Services.AddHttpClient();
+
+builder.Services.AddCors(options =>
+{
+options.AddDefaultPolicy(
+   policy =>
+
+			{
+	policy.AllowAnyOrigin()
+		  .AllowAnyHeader()
+			.AllowAnyMethod();
+});
+    });
+
+builder.Services.AddControllers();
+
 var app = builder.Build();
+
+app.UseCors();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -29,12 +56,16 @@ else
 
 app.UseHttpsRedirection();
 
+
 app.UseStaticFiles();
 app.UseAntiforgery();
+
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(WardrobeApp.Client._Imports).Assembly);
+
+app.MapControllers();
 
 app.Run();
