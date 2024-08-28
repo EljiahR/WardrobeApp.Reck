@@ -4,9 +4,12 @@
 @inject HttpClient Http
 
 <h3>Wardrobe</h3>
-<input @bind="@newCategory" />
-<button @onclick="@AddClothing">Add Clothing</button>
-
+<EditForm FormName="AddNewClothingForm" Model="NewClothing" OnValidSubmit="HandleValidSubmit">
+	<InputText id="category" @bind-Value="@NewClothing.Category" />
+	<InputText id="description" @bind-Value="@NewClothing.Description" />
+	<InputFile OnChange="HandleFileInput" />
+	<button type="submit">Submit</button>
+</EditForm>
 
 @if(isLoading)
 {
@@ -17,7 +20,22 @@ else if (wardrobe.Count > 0)
 	<ul>
 		@foreach (var item in wardrobe)
 		{
-			<li>@item.Category</li>
+			<li>
+				<p>@item.Id: @item.Category</p>
+				<p>@item.Description</p>
+				@if (item.ImageData != null)
+				{
+					<img style="width: 50px; height 50px;" src="data:@item.ImageType;base64,@(Convert.ToBase64String(item.ImageData))" />
+				}
+				else
+				{
+					<p>No image</p>
+				}
+				<div>
+					<button>Edit</button>
+					<button>Delete</button>
+				</div>
+			</li>
 		}
 	</ul>
 } else
@@ -26,9 +44,20 @@ else if (wardrobe.Count > 0)
 }
 
 @code {
+	[SupplyParameterFromForm(FormName = "AddNewClothingForm")]
+	private ClothingModel? NewClothing { get; set; }
+
+	protected override void OnInitialized()
+	{
+		NewClothing ??= new();
+	}
+
 	private List<ClothingModel> wardrobe = new();
 	private string? newCategory;
 	private bool isLoading = true;
+	private IBrowserFile? uploadedPicture;
+
+
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
@@ -63,13 +92,28 @@ else if (wardrobe.Count > 0)
 	{
 		try
 		{
-			//var postedClothing = await WardrobeService.AddClothingAsync(new ClothingModel { Category = newCategory });
-			//wardrobe.Add(postedClothing);
-			newCategory = string.Empty;
+			var response = await Http.PostAsJsonAsync<ClothingModel>("api/Wardrobe", NewClothing);
+			var postedClothing = await response.Content.ReadFromJsonAsync<ClothingModel>() ?? new ClothingModel();
+			wardrobe.Add(postedClothing);
+			NewClothing = new();
 		} catch (Exception ex)
 		{
 			Console.WriteLine(ex.Message);
 		}
 
+	}
+
+	private async Task HandleValidSubmit()
+	{
+		await AddClothing();
+	}
+
+	private async Task HandleFileInput(InputFileChangeEventArgs e)
+	{
+		var uploadedFile = e.File;
+		var buffer = new byte[uploadedFile.Size];
+		await uploadedFile.OpenReadStream().ReadAsync(buffer);
+		NewClothing.ImageData = buffer;
+		NewClothing.ImageType = uploadedFile.ContentType;
 	}
 }
