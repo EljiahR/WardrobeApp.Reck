@@ -38,5 +38,15 @@ namespace WardrobeApp.Controllers
 
             return CreatedAtAction("GetClothingModel", new { id = clothingModel.Id }, clothingModel);
         }
+
+        // DELETE: api/Wardrobe/Delete
+        [HttpPost]
+        [Route("Delete")]
+        public ActionResult DeleteClothingModel(ClothingModel clothingModel)
+        {
+            _wardrobeService.DeleteClothing(clothingModel);
+
+            return Ok();
+        }
     }
 }

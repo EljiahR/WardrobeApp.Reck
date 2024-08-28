@@ -28,9 +28,19 @@ namespace WardrobeApp.Repositories
             return clothing;
         }
 
+        public void DeleteClothing(ClothingModel clothing)
+        {
+            _wardrobe.Remove(clothing);
+			SaveChanges();
+        }
+
         private async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();
+        }
+        private void SaveChanges()
+        {
+            _context.SaveChanges();
         }
     }
 }

@@ -6,5 +6,6 @@ namespace WardrobeApp.Repositories
 	{
 		public Task<List<ClothingModel>> GetWardrobeAsync();
 		public Task<ClothingModel> AddClothingAsync(ClothingModel clothing);
+		public void DeleteClothing(ClothingModel clothing);
 	}
 }

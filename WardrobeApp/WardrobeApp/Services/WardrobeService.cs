@@ -21,5 +21,10 @@ namespace WardrobeApp.Services
         {
             return await _wardrobeRepository.GetWardrobeAsync();
         }
+
+        public void DeleteClothing(ClothingModel clothing)
+        {
+            _wardrobeRepository.DeleteClothing(clothing);
+        }
     }
 }

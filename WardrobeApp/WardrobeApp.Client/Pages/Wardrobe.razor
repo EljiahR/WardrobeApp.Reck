@@ -51,7 +51,7 @@ else if (wardrobe.Count > 0)
 					</td>
 					<td>
 						<button>Edit</button>
-						<button>Delete</button>
+						<button @onclick=@(() => RemoveClothing(item))>Delete</button>
 					</td>
 				</tr>
 			}
@@ -112,7 +112,7 @@ else if (wardrobe.Count > 0)
 	{
 		try
 		{
-			var response = await Http.PostAsJsonAsync<ClothingModel>("api/Wardrobe", NewClothing);
+			var response = await Http.PostAsJsonAsync<ClothingModel>("api/Wardrobe", NewClothing!);
 			var postedClothing = await response.Content.ReadFromJsonAsync<ClothingModel>() ?? new ClothingModel();
 			wardrobe.Add(postedClothing);
 			NewClothing = new();
@@ -121,6 +121,19 @@ else if (wardrobe.Count > 0)
 			Console.WriteLine(ex.Message);
 		}
 
+	}
+
+	private async Task RemoveClothing(ClothingModel clothingToDelete)
+	{
+		try
+		{
+			await Http.PostAsJsonAsync<ClothingModel>("api/Wardrobe/Delete", clothingToDelete);
+			wardrobe.Remove(clothingToDelete);
+
+		} catch(Exception ex)
+		{
+			Console.WriteLine(ex.Message);
+		}
 	}
 
 	private async Task HandleValidSubmit()

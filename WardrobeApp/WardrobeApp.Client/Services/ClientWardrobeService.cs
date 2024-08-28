@@ -12,7 +12,12 @@ public class ClientWardrobeService(HttpClient Http) : IWardrobeService
         return await response.Content.ReadFromJsonAsync<ClothingModel>() ?? new ClothingModel();
     }
 
-    public async Task<List<ClothingModel>> GetWardrobeAsync()
+	public void DeleteClothing(ClothingModel clothing)
+	{
+		throw new NotImplementedException();
+	}
+
+	public async Task<List<ClothingModel>> GetWardrobeAsync()
     {
         return await Http.GetFromJsonAsync<List<ClothingModel>>("api/Wardrobe") ?? new List<ClothingModel>();
     }
