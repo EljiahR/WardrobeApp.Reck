@@ -5,10 +5,15 @@
 
 <h3>Wardrobe</h3>
 <EditForm FormName="AddNewClothingForm" Model="NewClothing" OnValidSubmit="HandleValidSubmit">
-	<InputText id="category" @bind-Value="@NewClothing.Category" />
-	<InputText id="description" @bind-Value="@NewClothing.Description" />
+	<DataAnnotationsValidator />
+
+	<ValidationSummary />
+	<label for="category">Category</label>
+	<InputText id="category" @bind-Value="@NewClothing!.Category" placeholder="Shirt (Required)" />
+	<label for="description"></label>
+	<InputText id="description" @bind-Value="@NewClothing.Description" placeholder="A yellow shirt..." />
 	<InputFile OnChange="HandleFileInput" />
-	<button type="submit">Submit</button>
+	<button disabled="@isLoading" type="submit">Submit</button>
 </EditForm>
 
 @if(isLoading)
@@ -17,27 +22,42 @@
 } 
 else if (wardrobe.Count > 0)
 {
-	<ul>
-		@foreach (var item in wardrobe)
-		{
-			<li>
-				<p>@item.Id: @item.Category</p>
-				<p>@item.Description</p>
-				@if (item.ImageData != null)
-				{
-					<img style="width: 50px; height 50px;" src="data:@item.ImageType;base64,@(Convert.ToBase64String(item.ImageData))" />
-				}
-				else
-				{
-					<p>No image</p>
-				}
-				<div>
-					<button>Edit</button>
-					<button>Delete</button>
-				</div>
-			</li>
-		}
-	</ul>
+	<table class="table">
+		<thead>
+			<tr>
+				<td>Id</td>
+				<td>Category</td>
+				<td>Description</td>
+				<td>Image</td>
+				<td>Edit/Delete</td>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var item in wardrobe)
+			{
+				<tr>
+					<td>@item.Id</td>
+					<td>@item.Category</td>
+					<td>@item.Description</td>
+					<td>
+						@if (item.ImageData != null)
+						{
+							<img style="width: 100px; height: 100px;" src="data:@item.ImageType;base64,@(Convert.ToBase64String(item.ImageData))" />
+						}
+						else
+						{
+							<p>No image</p>
+						}
+					</td>
+					<td>
+						<button>Edit</button>
+						<button>Delete</button>
+					</td>
+				</tr>
+			}
+		</tbody>
+		
+	</table>
 } else
 {
 	<p>Wardrobe is empty :(</p>
