@@ -39,7 +39,16 @@ namespace WardrobeApp.Controllers
             return CreatedAtAction("GetClothingModel", new { id = clothingModel.Id }, clothingModel);
         }
 
-        // DELETE: api/Wardrobe/Delete
+        // POST: api/Wardrobe/Update
+        [HttpPost]
+        [Route("Update")]
+        public ActionResult UpdateClothingModel(ClothingModel updatedClothingModel)
+        {
+            var result = _wardrobeService.UpdateClothing(updatedClothingModel);
+            return Ok(result);  
+        }
+
+        // POST: api/Wardrobe/Delete
         [HttpPost]
         [Route("Delete")]
         public ActionResult DeleteClothingModel(ClothingModel clothingModel)

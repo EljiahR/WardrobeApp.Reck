@@ -22,6 +22,11 @@ namespace WardrobeApp.Services
             return await _wardrobeRepository.GetWardrobeAsync();
         }
 
+        public ClothingModel UpdateClothing(ClothingModel updatedClothing)
+        {
+            return _wardrobeRepository.UpdateClothing(updatedClothing);
+        }
+
         public void DeleteClothing(ClothingModel clothing)
         {
             _wardrobeRepository.DeleteClothing(clothing);

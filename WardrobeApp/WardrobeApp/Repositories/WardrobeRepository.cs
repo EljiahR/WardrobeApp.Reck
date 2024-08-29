@@ -28,6 +28,13 @@ namespace WardrobeApp.Repositories
             return clothing;
         }
 
+        public ClothingModel UpdateClothing(ClothingModel updatedClothing)
+        {
+            _wardrobe.Update(updatedClothing);
+            SaveChanges();
+            return updatedClothing;
+        }
+
         public void DeleteClothing(ClothingModel clothing)
         {
             _wardrobe.Remove(clothing);

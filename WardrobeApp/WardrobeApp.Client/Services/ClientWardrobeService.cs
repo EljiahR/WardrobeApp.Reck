@@ -21,4 +21,9 @@ public class ClientWardrobeService(HttpClient Http) : IWardrobeService
     {
         return await Http.GetFromJsonAsync<List<ClothingModel>>("api/Wardrobe") ?? new List<ClothingModel>();
     }
+
+	public ClothingModel UpdateClothing(ClothingModel updatedClothing)
+	{
+		throw new NotImplementedException();
+	}
 }

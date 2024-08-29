@@ -200,7 +200,8 @@ else if (wardrobe.Count > 0)
 			var response = await Http.PostAsJsonAsync<ClothingModel>("api/Wardrobe/Update", updatedModel);
 			var postedClothing = await response.Content.ReadFromJsonAsync<ClothingModel>() ?? new ClothingModel();
 			var originalModel = wardrobe.First(item => updatedModel.Id == item.Id);
-			originalModel = postedClothing; 
+			int index = wardrobe.IndexOf(originalModel);
+			wardrobe[index] = postedClothing; 
 			displayEdit[postedClothing.Id] = false;
 			editModels[postedClothing.Id] = new();
 		}
