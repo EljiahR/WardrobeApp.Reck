@@ -8,8 +8,6 @@ using WardrobeApp.Services;
 using WardrobeApp.Repositories;
 using Microsoft.Net.Http.Headers;
 
-var MyAllowSpecificOrigins = "_MyAllowSpecificOrigins";
-
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<WardrobeContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("WardrobeContext") ?? throw new InvalidOperationException("Connection string 'WardrobeContext' not found.")));

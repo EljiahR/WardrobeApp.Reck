@@ -12,7 +12,7 @@
 	<InputText id="category" @bind-Value="@NewClothing!.Category" placeholder="Shirt (Required)" />
 	<label for="description"></label>
 	<InputText id="description" @bind-Value="@NewClothing.Description" placeholder="A yellow shirt..." />
-	<InputFile OnChange="HandleFileInput" />
+	<InputFile OnChange=@((e) => HandleFileInput(e, NewClothing)) />
 	<button disabled="@isLoading" type="submit">Submit</button>
 </EditForm>
 
@@ -34,27 +34,48 @@ else if (wardrobe.Count > 0)
 		</thead>
 		<tbody>
 			@foreach (var item in wardrobe)
-			{
-				<tr>
-					<td>@item.Id</td>
-					<td>@item.Category</td>
-					<td>@item.Description</td>
-					<td>
-						@if (item.ImageData != null)
-						{
-							<img style="width: 100px; height: 100px;" src="data:@item.ImageType;base64,@(Convert.ToBase64String(item.ImageData))" />
-						}
-						else
-						{
-							<p>No image</p>
-						}
-					</td>
-					<td>
-						<button>Edit</button>
-						<button @onclick=@(() => RemoveClothing(item))>Delete</button>
-					</td>
-				</tr>
-			}
+				if (displayEdit[item.Id])
+				{
+					<tr>
+						<td>@item.Id</td>
+						<td colspan="3">
+							<EditForm FormName="Update-item.Id" Model="@editModels[item.Id]" OnValidSubmit=@(() => HandleValidUpdate(editModels[item.Id]))>
+								<DataAnnotationsValidator />
+
+								<ValidationSummary />
+								<InputText id="categoryEdit" @bind-Value="@editModels[item.Id].Category" placeholder="@editModels[item.Id].Category" />
+								<InputText id="descriptionEdit" @bind-Value="@editModels[item.Id].Description" placeholder="@editModels[item.Id].Description" />
+								<InputFile OnChange=@((e) => HandleFileInput(e, editModels[item.Id])) />
+								<button disabled="@isLoading" type="submit">Update</button>
+							</EditForm>
+						</td>
+						<td>
+							<button @onclick=@(() => ToggleClothingEdit(item.Id))>Cancel</button>
+						</td>
+					</tr>
+				} else
+				{
+					<tr>
+						<td>@item.Id</td>
+						<td>@item.Category</td>
+						<td>@item.Description</td>
+						<td>
+							@if (item.ImageData != null)
+							{
+								<img style="width: 100px; height: 100px;" src="data:@item.ImageType;base64,@(Convert.ToBase64String(item.ImageData))" />
+							}
+							else
+							{
+								<p>No image</p>
+							}
+						</td>
+						<td>
+							<button @onclick=@(() => ToggleClothingEdit(item.Id))>Edit</button>
+							<button @onclick=@(() => RemoveClothing(item))>Delete</button>
+						</td>
+					</tr>
+				}
+			
 		</tbody>
 		
 	</table>
@@ -73,9 +94,12 @@ else if (wardrobe.Count > 0)
 	}
 
 	private List<ClothingModel> wardrobe = new();
+	Dictionary<int, bool> displayEdit = new();
+	Dictionary<int, ClothingModel> editModels = new();
 	private string? newCategory;
 	private bool isLoading = true;
 	private IBrowserFile? uploadedPicture;
+	private IBrowserFile? uploadedPictureUpdate;
 
 
 
@@ -96,6 +120,10 @@ else if (wardrobe.Count > 0)
 			isLoading = true;
 			//wardrobe = await WardrobeService.GetWardrobeAsync();
 			wardrobe = await Http.GetFromJsonAsync<List<ClothingModel>>("api/Wardrobe") ?? new List<ClothingModel>();
+			foreach (var item in wardrobe)
+			{
+				displayEdit[item.Id] = false;
+			}
 		}
 		catch (Exception ex)
 		{
@@ -115,6 +143,7 @@ else if (wardrobe.Count > 0)
 			var response = await Http.PostAsJsonAsync<ClothingModel>("api/Wardrobe", NewClothing!);
 			var postedClothing = await response.Content.ReadFromJsonAsync<ClothingModel>() ?? new ClothingModel();
 			wardrobe.Add(postedClothing);
+			displayEdit[postedClothing.Id] = false;
 			NewClothing = new();
 		} catch (Exception ex)
 		{
@@ -123,12 +152,30 @@ else if (wardrobe.Count > 0)
 
 	}
 
+	private void ToggleClothingEdit(int id)
+	{
+		displayEdit[id] = !displayEdit[id];
+		if(displayEdit[id])
+		{
+			var originalModel = wardrobe.First(item => item.Id == id);
+			editModels[id] = new ClothingModel { 
+				Id = id,
+				Category = originalModel.Category,
+				Description = originalModel.Description,
+				ImageData = originalModel.ImageData,
+				ImageType = originalModel.ImageType
+				};
+		}
+	}
+
 	private async Task RemoveClothing(ClothingModel clothingToDelete)
 	{
 		try
 		{
 			await Http.PostAsJsonAsync<ClothingModel>("api/Wardrobe/Delete", clothingToDelete);
 			wardrobe.Remove(clothingToDelete);
+			displayEdit.Remove(clothingToDelete.Id);
+			if (editModels.ContainsKey(clothingToDelete.Id)) editModels.Remove(clothingToDelete.Id);
 
 		} catch(Exception ex)
 		{
@@ -141,12 +188,35 @@ else if (wardrobe.Count > 0)
 		await AddClothing();
 	}
 
-	private async Task HandleFileInput(InputFileChangeEventArgs e)
+	private async Task HandleValidUpdate(ClothingModel updatedModel)
+	{
+		await UpdateClothing(updatedModel);
+	}
+
+	private async Task UpdateClothing(ClothingModel updatedModel)
+	{
+		try
+		{
+			var response = await Http.PostAsJsonAsync<ClothingModel>("api/Wardrobe/Update", updatedModel);
+			var postedClothing = await response.Content.ReadFromJsonAsync<ClothingModel>() ?? new ClothingModel();
+			var originalModel = wardrobe.First(item => updatedModel.Id == item.Id);
+			originalModel = postedClothing; 
+			displayEdit[postedClothing.Id] = false;
+			editModels[postedClothing.Id] = new();
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine(ex.Message);
+		}
+
+	}
+
+	private async Task HandleFileInput(InputFileChangeEventArgs e, ClothingModel clothingModel)
 	{
 		var uploadedFile = e.File;
 		var buffer = new byte[uploadedFile.Size];
 		await uploadedFile.OpenReadStream().ReadAsync(buffer);
-		NewClothing.ImageData = buffer;
-		NewClothing.ImageType = uploadedFile.ContentType;
+		clothingModel.ImageData = buffer;
+		clothingModel.ImageType = uploadedFile.ContentType;
 	}
 }
